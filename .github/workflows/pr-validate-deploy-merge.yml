@@ -59,9 +59,9 @@ jobs:
         with:
           name: nextjs-build
           path: |
-            .next/
-            out/
-            public/
+            .next
+            public
+          if-no-files-found: error
           retention-days: 1
 
   deploy:
