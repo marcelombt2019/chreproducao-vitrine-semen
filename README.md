@@ -51,6 +51,8 @@ O workflow usa um ambiente chamado "production" que requer aprovação manual an
 
 ## Desenvolvimento Local
 
+### Usando Node.js diretamente
+
 ```bash
 # Instalar dependências
 npm install
@@ -68,6 +70,53 @@ npm start
 npm run lint
 ```
 
+### Usando Docker
+
+#### Desenvolvimento com Docker
+
+```bash
+# Executar em modo de desenvolvimento com hot-reload
+docker-compose --profile dev up
+
+# Ou usando docker-compose run
+docker-compose run --rm --service-ports dev
+```
+
+A aplicação estará disponível em `http://localhost:3000` com hot-reload ativado.
+
+#### Produção com Docker
+
+```bash
+# Build da imagem
+docker-compose build
+
+# Executar em modo de produção
+docker-compose up
+
+# Ou executar em background
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Parar os containers
+docker-compose down
+```
+
+#### Comandos Docker úteis
+
+```bash
+# Build manual da imagem
+docker build -t chreproducao-vitrine-semen .
+
+# Executar container manualmente
+docker run -p 3000:3000 chreproducao-vitrine-semen
+
+# Executar em modo desenvolvimento
+docker build -f Dockerfile.dev -t chreproducao-vitrine-semen-dev .
+docker run -p 3000:3000 -v $(pwd):/app -v /app/node_modules chreproducao-vitrine-semen-dev
+```
+
 ## Estrutura do Projeto
 
 ```
@@ -79,6 +128,10 @@ npm run lint
 │   └── workflows/         # GitHub Actions workflows
 │       ├── auto-pr-on-push.yml              # Auto-criação de PRs
 │       └── pr-validate-deploy-merge.yml     # Build, Deploy e Merge
+├── Dockerfile             # Dockerfile para produção (multi-stage)
+├── Dockerfile.dev         # Dockerfile para desenvolvimento
+├── docker-compose.yml     # Configuração Docker Compose
+├── .dockerignore          # Arquivos ignorados pelo Docker
 ├── next.config.js         # Configuração do Next.js
 ├── package.json           # Dependências e scripts
 └── tsconfig.json          # Configuração do TypeScript
@@ -114,5 +167,30 @@ npm run lint
 
 - **Next.js 14**: Framework React com App Router
 - **TypeScript**: Tipagem estática
+- **Docker**: Containerização da aplicação
 - **Azure Static Web Apps**: Hospedagem e deploy
 - **GitHub Actions**: CI/CD automático
+
+## Docker
+
+### Arquivos Docker
+
+- **Dockerfile**: Multi-stage build otimizado para produção
+  - Stage 1 (deps): Instala dependências
+  - Stage 2 (builder): Compila a aplicação
+  - Stage 3 (runner): Imagem final mínima com apenas o necessário
+  
+- **Dockerfile.dev**: Dockerfile para desenvolvimento com hot-reload
+
+- **docker-compose.yml**: Orquestração de containers
+  - Serviço `app`: Produção
+  - Serviço `dev`: Desenvolvimento (profile: dev)
+
+### Características do Docker Setup
+
+- ✅ Multi-stage build para imagens otimizadas
+- ✅ Non-root user para segurança
+- ✅ Hot-reload em modo desenvolvimento
+- ✅ Health checks configurados
+- ✅ Volumes para desenvolvimento
+- ✅ .dockerignore para builds eficientes
